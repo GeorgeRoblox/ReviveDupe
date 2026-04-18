@@ -1,33 +1,29 @@
 --// 
 --// Revive Duper Script by upio
 --// Method found by lolcat
---// Modified to use local player attribute communication instead of TextChatService
 --// 
 
 --// Services
 local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TextChatService = game:GetService("TextChatService")
 local VirtualInputManager = Instance.new("VirtualInputManager")
 
 --// Remotes
-local RemotesFolder = ReplicatedStorage:WaitForChild("RemotesFolder")
-local ReviveFriendEvent = RemotesFolder:WaitForChild("ReviveFriend")
-local ObtainReviveEvent = RemotesFolder:WaitForChild("ObtainGiftedRevive")
+local RemotesFolder = ReplicatedStorage.RemotesFolder
+local ReviveFriendEvent = RemotesFolder.ReviveFriend
+local ObtainReviveEvent = RemotesFolder.ObtainGiftedRevive
 
 --// Player Variables
 local LocalPlayer = Players.LocalPlayer
 local OtherPlayer
 
 --// Game Data
-local LatestRoom = ReplicatedStorage:WaitForChild("GameData"):WaitForChild("LatestRoom")
-local Revives = LocalPlayer.PlayerGui:WaitForChild("TopbarUI"):WaitForChild("Topbar"):WaitForChild("StatsTopbarHandler"):WaitForChild("StatModules"):WaitForChild("Revives"):WaitForChild("RevivesVal")
+local LatestRoom = ReplicatedStorage.GameData.LatestRoom
+local Revives = LocalPlayer.PlayerGui.TopbarUI.Topbar.StatsTopbarHandler.StatModules.Revives.RevivesVal
 
 --// Constants
--- IMPORTANT: Set the account name you want to duplicate to here
-local AccountToDuplicateTo = "FearGe0rge" 
-local DuplicationAmount = 1000
-
 local IsMainAccount = LocalPlayer.Name == AccountToDuplicateTo
 local DuplicationCount = DuplicationAmount or 1000
 local Title = IsMainAccount and "Revive Dupe Helper (Main Account)" or "Revive Dupe Helper (Alt Account)"
@@ -37,28 +33,9 @@ local PacketPrefix = "ReviveDupe_"
 local IsOtherAccountInitialized = false
 local IsGiftingRevive = false
 
---// Communication (Using Player Attributes for local communication)
-local function SendPacket(PacketName)
-    local PacketData = `{PacketPrefix}{PacketName}`
-    LocalPlayer:SetAttribute("DupePacket", PacketData)
-    -- Reset after a short delay so the same packet can be sent again if needed
-    task.delay(0.1, function()
-        if LocalPlayer:GetAttribute("DupePacket") == PacketData then
-            LocalPlayer:SetAttribute("DupePacket", nil)
-        end
-    end)
-    return PacketData
-end
-
-local function HandlePacket(sender, packetData)
-    if
-        not packetData or not sender or
-        sender == LocalPlayer or
-        packetData:sub(1, #PacketPrefix) ~= PacketPrefix
-    then
-        return
-    end
+TextChatService.MessageReceived:Connect(function(message: TextChatMessage)
     
+    local sender = Players:GetPlayerByUserId(textSource.UserId)
     local packetName = packetData:sub(#PacketPrefix + 1)
 
     if packetName == "Init" then
@@ -70,13 +47,12 @@ local function HandlePacket(sender, packetData)
         OtherPlayer = sender
         
         -- Replicate to other client that this account has been initialized
-        SendPacket("Init")
 
         StarterGui:SetCore("SendNotification", {
             Title = Title,
             Text = `{sender.Name} initialized, starting dupe process...`,
             Duration = 5
-        }) 
+        })
     end
     
     if not IsOtherAccountInitialized then
@@ -105,33 +81,7 @@ local function HandlePacket(sender, packetData)
             Duration = 5
         })
     end
-end
-
--- Listen for packets from other players
-local function SetupPlayer(player)
-    if player == LocalPlayer then return end
-    
-    player:GetAttributeChangedSignal("DupePacket"):Connect(function()
-        local data = player:GetAttribute("DupePacket")
-        if data then
-            HandlePacket(player, data)
-        end
-    end)
-    
-    -- Check if they already have a packet set
-    local existingData = player:GetAttribute("DupePacket")
-    if existingData then
-        HandlePacket(player, existingData)
-    end
-end
-
-Players.PlayerAdded:Connect(SetupPlayer)
-for _, player in ipairs(Players:GetPlayers()) do
-    SetupPlayer(player)
-end
-
---// Send a message to the other account to initialize
-SendPacket("Init")
+end)
 
 StarterGui:SetCore("SendNotification", {
     Title = Title,
@@ -175,7 +125,6 @@ end
 
 --// Gifting 1 revive to alt account process
 if Revives.Value == 0 and not IsMainAccount then
-    SendPacket("SendReviveStandardToMe")
     IsGiftingRevive = true
 
     AttemptToKillLocalPlayer()
@@ -205,6 +154,7 @@ if Revives.Value == 0 and not IsMainAccount then
 end
 
 --// We account for delays in communication, so we send a notification to the user
+--// If the ping is too high, heh.. skill issue
 StarterGui:SetCore("SendNotification", {
     Title = Title,
     Text = "Please wait for 5 seconds to ensure proper communication has been established.",

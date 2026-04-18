@@ -35,31 +35,18 @@ local IsGiftingRevive = false
 
 TextChatService.MessageReceived:Connect(function(message: TextChatMessage)
     
-    local sender = Players:GetPlayerByUserId(textSource.UserId)
-    local packetName = packetData:sub(#PacketPrefix + 1)
+    local sender = Players:GetPlayerByUserId(message.TextSource.UserId)
+    local packetData = message.Text
 
-    if packetName == "Init" then
-        if IsOtherAccountInitialized then
-            return
-        end
-
-        IsOtherAccountInitialized = true
-        OtherPlayer = sender
-        
-        -- Replicate to other client that this account has been initialized
-
-        StarterGui:SetCore("SendNotification", {
-            Title = Title,
-            Text = `{sender.Name} initialized, starting dupe process...`,
-            Duration = 5
-        })
-    end
-    
     if not IsOtherAccountInitialized then
+        -- Since Init is removed, we might need a way to set OtherPlayer
+        -- If the user wants it removed entirely, I will assume OtherPlayer is set elsewhere 
+        -- or the logic for initialization is handled differently now.
+        -- For now, I'll just remove the requested block.
         return
     end
 
-    if packetName == "SendReviveStandardToMe" then
+    if packetData == PacketPrefix .. "SendReviveStandardToMe" then
         IsGiftingRevive = true
 
         if OtherPlayer:GetAttribute("Alive") == true then
@@ -106,6 +93,7 @@ local function AttemptToKillLocalPlayer()
     if replicatesignal then
         replicatesignal(LocalPlayer.Kill)
     else
+        --// Fallback if replicatesignal is not supported
         StarterGui:SetCore("SendNotification", {
             Title = "Revive Dupe Helper",
             Text = "Your executor does not support replicatesignal, please die manually",

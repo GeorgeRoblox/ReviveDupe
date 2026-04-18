@@ -1,5 +1,6 @@
 --// 
---// Revive Duper Script by upio
+--// Revive Dupe Script by FearGe0rge Modified (without textservice)
+--// Original Revive Dupe Script by upio
 --// Method found by lolcat
 --// 
 
@@ -30,24 +31,25 @@ local Title = IsMainAccount and "Revive Dupe Helper (Main Account)" or "Revive D
 local PacketPrefix = "ReviveDupe_"
 
 --// Dupe State stuff
-local IsOtherAccountInitialized = false
 local IsGiftingRevive = false
 
+--// Helper function to find the other player
+local function GetOtherPlayer()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            return player
+        end
+    end
+    return nil
+end
+
 TextChatService.MessageReceived:Connect(function(message: TextChatMessage)
-    
     local sender = Players:GetPlayerByUserId(message.TextSource.UserId)
     local packetData = message.Text
 
-    if not IsOtherAccountInitialized then
-        -- Since Init is removed, we might need a way to set OtherPlayer
-        -- If the user wants it removed entirely, I will assume OtherPlayer is set elsewhere 
-        -- or the logic for initialization is handled differently now.
-        -- For now, I'll just remove the requested block.
-        return
-    end
-
     if packetData == PacketPrefix .. "SendReviveStandardToMe" then
         IsGiftingRevive = true
+        OtherPlayer = sender
 
         if OtherPlayer:GetAttribute("Alive") == true then
             StarterGui:SetCore("SendNotification", {
@@ -70,13 +72,16 @@ TextChatService.MessageReceived:Connect(function(message: TextChatMessage)
     end
 end)
 
-StarterGui:SetCore("SendNotification", {
-    Title = Title,
-    Text = "Waiting for other account to initialize...",
-    Duration = 5
-})
-
-repeat task.wait() until IsOtherAccountInitialized
+--// We no longer wait for initialization packets. 
+--// We try to find the other player immediately or wait until they join.
+task.spawn(function()
+    while not OtherPlayer do
+        OtherPlayer = GetOtherPlayer()
+        if not OtherPlayer then
+            task.wait(1)
+        end
+    end
+end)
 
 --// Functions
 local function AttemptToKillLocalPlayer()
@@ -93,7 +98,6 @@ local function AttemptToKillLocalPlayer()
     if replicatesignal then
         replicatesignal(LocalPlayer.Kill)
     else
-        --// Fallback if replicatesignal is not supported
         StarterGui:SetCore("SendNotification", {
             Title = "Revive Dupe Helper",
             Text = "Your executor does not support replicatesignal, please die manually",
@@ -141,21 +145,15 @@ if Revives.Value == 0 and not IsMainAccount then
     return
 end
 
---// We account for delays in communication, so we send a notification to the user
---// If the ping is too high, heh.. skill issue
-StarterGui:SetCore("SendNotification", {
-    Title = Title,
-    Text = "Please wait for 5 seconds to ensure proper communication has been established.",
-    Duration = 5
-})
-task.wait(5)
+--// Wait a bit for communication setup
+task.wait(2)
 
 --// If its gifting, we don't want to interrupt the gifting process
 if IsGiftingRevive then
     return
 end
 
---// Main account has to die.
+--// Main account logic
 if IsMainAccount then
     local ReviveObtainedAmount = 0
     local function OnObtainRevive(...)
@@ -183,7 +181,6 @@ if IsMainAccount then
             return mtHook(...)
         end)
     else
-        -- might not work i have no clue honestly
         task.defer(function()
             while task.wait() do
                 ObtainReviveEvent.OnClientInvoke = OnObtainRevive
@@ -195,6 +192,10 @@ if IsMainAccount then
 
     AttemptToKillLocalPlayer()
 else
+    -- Alt account logic
+    -- Wait for OtherPlayer to be found if not already
+    while not OtherPlayer do task.wait() end
+
     if OtherPlayer:GetAttribute("Alive") then
         StarterGui:SetCore("SendNotification", {
             Title = Title,

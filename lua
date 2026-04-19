@@ -1,6 +1,5 @@
 --// 
---// Revive Dupe Script by FearGe0rge Modified (without textservice)
---// Original Revive Dupe Script by upio
+--// Original Revive Dupe code by upio
 --// Method found by lolcat
 --// 
 
@@ -20,20 +19,16 @@ local ObtainReviveEvent = RemotesFolder.ObtainGiftedRevive
 local LocalPlayer = Players.LocalPlayer
 local OtherPlayer
 
---// Game Data
 local LatestRoom = ReplicatedStorage.GameData.LatestRoom
 local Revives = LocalPlayer.PlayerGui.TopbarUI.Topbar.StatsTopbarHandler.StatModules.Revives.RevivesVal
 
---// Constants
 local IsMainAccount = LocalPlayer.Name == AccountToDuplicateTo
 local DuplicationCount = DuplicationAmount or 1000
 local Title = IsMainAccount and "Revive Dupe Helper (Main Account)" or "Revive Dupe Helper (Alt Account)"
 local PacketPrefix = "ReviveDupe_"
 
---// Dupe State stuff
 local IsGiftingRevive = false
 
---// Helper function to find the other player
 local function GetOtherPlayer()
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer then
@@ -72,8 +67,6 @@ TextChatService.MessageReceived:Connect(function(message: TextChatMessage)
     end
 end)
 
---// We no longer wait for initialization packets. 
---// We try to find the other player immediately or wait until they join.
 task.spawn(function()
     while not OtherPlayer do
         OtherPlayer = GetOtherPlayer()
@@ -113,8 +106,6 @@ local function AttemptToKillLocalPlayer()
     })
 end
 
---// Main Logic
-
 --// Gifting 1 revive to alt account process
 if Revives.Value == 0 and not IsMainAccount then
     IsGiftingRevive = true
@@ -145,15 +136,12 @@ if Revives.Value == 0 and not IsMainAccount then
     return
 end
 
---// Wait a bit for communication setup
 task.wait(2)
 
---// If its gifting, we don't want to interrupt the gifting process
 if IsGiftingRevive then
     return
 end
 
---// Main account logic
 if IsMainAccount then
     local ReviveObtainedAmount = 0
     local function OnObtainRevive(...)
@@ -192,8 +180,6 @@ if IsMainAccount then
 
     AttemptToKillLocalPlayer()
 else
-    -- Alt account logic
-    -- Wait for OtherPlayer to be found if not already
     while not OtherPlayer do task.wait() end
 
     if OtherPlayer:GetAttribute("Alive") then

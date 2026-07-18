@@ -1,4 +1,4 @@
---// 
+--//  Revive dupe
 --// Original Revive Dupe code by upio
 --// Method found by lolcat
 --// 
@@ -18,6 +18,8 @@ local ObtainReviveEvent = RemotesFolder.ObtainGiftedRevive
 --// Player Variables
 local LocalPlayer = Players.LocalPlayer
 local OtherPlayer
+local notify = loadstring(game:HttpGet("https://raw.githubusercontent.com/GeorgeRoblox/Rhyans-notification/refs/heads/main/Notification20%25yes.lua"))()
+Upio = "https://raw.githubusercontent.com/GeorgeRoblox/Notification/refs/heads/main/Images/Upio.png"
 
 local LatestRoom = ReplicatedStorage.GameData.LatestRoom
 local Revives = LocalPlayer.PlayerGui.TopbarUI.Topbar.StatsTopbarHandler.StatModules.Revives.RevivesVal
@@ -47,22 +49,25 @@ TextChatService.MessageReceived:Connect(function(message: TextChatMessage)
         OtherPlayer = sender
 
         if OtherPlayer:GetAttribute("Alive") == true then
-            StarterGui:SetCore("SendNotification", {
-                Title = Title,
-                Text = "Waiting for the other account to die...",
-                Duration = 5
-            })
-
+notify("BlackKing", {
+	Title = "Upio",
+	Description = "Waiting for the other account to die...",
+	Image = Upio,
+	Color = Color3.fromRGB(255, 222, 189),
+	Time = 5
+})
             OtherPlayer:GetAttributeChangedSignal("Alive"):Wait()
         end
 
         task.wait(2.5)
         ReviveFriendEvent:FireServer(OtherPlayer.Name)
 
-        StarterGui:SetCore("SendNotification", {
-            Title = Title,
-            Text = "Revive sent to alt account. Now rejoin a new game with your alt account.",
-            Duration = 5
+        notify("BlackKing", {
+            Title = "Upio",
+            Description = "Revive sent to alt account. Now rejoin a new game with your alt account.",
+            Image = Upio,
+            Color = Color3.fromRGB(255, 222, 189),
+            Time = 5
         })
     end
 end)
@@ -79,10 +84,12 @@ end)
 --// Functions
 local function AttemptToKillLocalPlayer()
     if LatestRoom.Value == 0 then
-        StarterGui:SetCore("SendNotification", {
+        notify("BlackKing", {
             Title = "Revive Dupe Helper",
-            Text = "Please open a door",
-            Duration = 5
+            Description = "Please open a door",
+            Image = Upio,
+            Color = Color3.fromRGB(255, 222, 189),
+            Time = 5
         })
 
         LatestRoom:GetPropertyChangedSignal("Value"):Wait()
@@ -91,18 +98,22 @@ local function AttemptToKillLocalPlayer()
     if replicatesignal then
         replicatesignal(LocalPlayer.Kill)
     else
-        StarterGui:SetCore("SendNotification", {
+        notify("BlackKing", {
             Title = "Revive Dupe Helper",
-            Text = "Your executor does not support replicatesignal, please die manually",
-            Duration = 5
+            Description = "Your executor does not support replicatesignal, please die manually",
+            Image = Upio,
+            Color = Color3.fromRGB(255, 222, 189),
+            Time = 5
         })
         LocalPlayer.Character.Humanoid.Died:Wait()
     end
 
-    StarterGui:SetCore("SendNotification", {
+    notify("BlackKing", {
         Title = "Revive Dupe Helper",
-        Text = "Make your alt account try and revive you. (Click more than once)",
-        Duration = 5
+        Description = "Make your alt account try and revive you. (Click more than once)",
+        Image = Upio,
+        Color = Color3.fromRGB(255, 222, 189),
+        Time = 5
     })
 end
 
@@ -112,10 +123,12 @@ if Revives.Value == 0 and not IsMainAccount then
 
     AttemptToKillLocalPlayer()
     
-    StarterGui:SetCore("SendNotification", {
-        Title = Title,
-        Text = "Waiting for the other account to gift you a revive...",
-        Duration = 5
+    notify("BlackKing", {
+        Title = "Upio",
+        Description = "Waiting for the other account to gift you a revive...",
+        Image = Upio,
+        Color = Color3.fromRGB(255, 222, 189),
+        Time = 5
     })
     
     local AcceptReviveThread = task.spawn(function()
@@ -183,20 +196,24 @@ else
     while not OtherPlayer do task.wait() end
 
     if OtherPlayer:GetAttribute("Alive") then
-        StarterGui:SetCore("SendNotification", {
-            Title = Title,
-            Text = "Waiting for the other account to die...",
-            Duration = 5
+        notify("BlackKing", {
+            Title = "Upio",
+            Description = "Waiting for the other account to die...",
+            Image = Upio,
+            Color = Color3.fromRGB(255, 222, 189),
+            Time = 5
         })
 
         OtherPlayer:GetAttributeChangedSignal("Alive"):Wait()
     end
 
     for i = 1, 5 do
-        StarterGui:SetCore("SendNotification", {
-            Title = Title,
-            Text = `Duping in {6 - i} seconds...`,
-            Duration = 1
+        notify("BlackKing", {
+            Title = "Upio",
+            Description = `Duping in {6 - i} seconds...`,
+            Image = Upio,
+            Color = Color3.fromRGB(255, 222, 189),
+            Time = 1
         })
         task.wait(1)
     end
@@ -205,9 +222,11 @@ else
         ReviveFriendEvent:FireServer(OtherPlayer.Name)
     end
 
-    StarterGui:SetCore("SendNotification", {
-        Title = Title,
-        Text = "Duping completed!",
-        Duration = 5
+    notify("BlackKing", {
+        Title = "Upio",
+        Description = "Duping completed!",
+        Image = Upio,
+        Color = Color3.fromRGB(255, 222, 189),
+        Time = 5
     })
 end

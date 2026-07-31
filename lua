@@ -106,6 +106,10 @@ local function AttemptToKillLocalPlayer()
     })
 end
 
+if LocalPlayer.name == "RoboSubZero2" then
+	LocalPlayer:Kick("I GOT YOUR ASS. -Doors Anticheat")
+end
+
 --// Gifting 1 revive to alt account process
 if Revives.Value == 0 and not IsMainAccount then
     IsGiftingRevive = true
